@@ -1,8 +1,6 @@
 # Skill Library
 
-Portable AI skills in [Agent Skills](https://agentskills.io) format, synced from [Zo Computer](https://jlong.zo.computer).
-
-Last synced: 2026-07-18
+Skills that I use in my personal development!
 
 ## Skills
 
