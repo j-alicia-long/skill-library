@@ -1,10 +1,10 @@
 # Skill Library
 
-Portable AI skills synced from [Zo Computer](https://jlong.zo.computer). Each skill is exported in the native format for Claude Code, Cursor, GitHub Copilot, and OpenAI Codex.
+Portable AI skills in [Agent Skills](https://agentskills.io) format, synced from [Zo Computer](https://jlong.zo.computer).
 
 Last synced: 2026-07-18
 
-## Skills included
+## Skills
 
 - **animation-vocabulary** — Reverse-lookup glossary that turns a vague description of a web animation or motion effect into its exact term ("the bouncy thing when a popover opens" → Pop in; "the iOS rubber-band scroll" → Rubber-banding). Use when the user asks "what's it called when…", or describes a motion effect without knowing its name and wants the right word to prompt an AI or designer with. For naming an effect, not designing or building one.
 - **apple-design** — Apple's approach to interface design and fluid, physical motion, translated for the web. Use when building or reviewing gesture-driven UI, spring animations, drag/swipe/sheet interactions, momentum and interruptible transitions, translucent materials and depth, typography (optical sizing, tracking, leading), reduced-motion, or the design foundations (feedback, spatial consistency, restraint) behind Apple-style interfaces.
@@ -13,74 +13,19 @@ Last synced: 2026-07-18
 - **frontend-design** — Create distinctive, production-grade frontend interfaces with high design quality. Use this skill when the user asks to build web components, pages, artifacts, posters, or applications (examples include websites, landing pages, dashboards, React components, HTML/CSS layouts, or when styling/beautifying any web UI). Generates creative, polished code and UI design that avoids generic AI aesthetics.
 - **github** — Interact with GitHub using the `gh` CLI. Use `gh issue`, `gh pr`, `gh run`, and `gh api` for issues, PRs, CI runs, and advanced queries.
 - **grill-me** — A relentless interview to sharpen a plan or design. Use when user wants to stress-test a plan, get grilled on their design, or mentions "grill me".
+- **grill-with-docs** — A relentless interview to sharpen a plan or design, which also creates docs (ADR's and glossary) as we go.
 - **grilling** — Grill the user relentlessly about a plan, decision, or idea. Use when the user wants to stress-test their thinking, or uses any 'grill' trigger phrases.
 - **mcporter** — Work with MCP servers directly
 - **product-comparator** — Find the best deal on a product across retailers. Use when the user wants to compare prices, find the cheapest option, or decide where to buy something. Searches multiple stores, normalizes prices per unit, checks seller reputation, and recommends the best option.
+- **setup-pre-commit** — Set up Husky pre-commit hooks with lint-staged (Prettier), type checking, and tests in the current repo. Use when user wants to add pre-commit hooks, set up Husky, configure lint-staged, or add commit-time formatting/typechecking/testing.
+- **tdd** — Test-driven development. Use when the user wants to build features or fix bugs test-first, mentions "red-green-refactor", or wants integration tests.
+- **teach** — Teach the user a new skill or concept, within this workspace.
+- **to-spec** — Turn the current conversation into a spec and publish it to the project issue tracker — no interview, just synthesis of what you've already discussed.
 - **webapp-testing** — Toolkit for interacting with and testing local web applications using Playwright. Supports verifying frontend functionality, debugging UI behavior, capturing browser screenshots, and viewing browser logs.
+- **writing-great-skills** — Reference for writing and editing skills well — the vocabulary and principles that make a skill predictable.
 
-## Quick install
-
-### Claude Code
-
-**Global** (available in all projects):
-```bash
-gh repo clone j-alicia-long/skill-library /tmp/skill-library
-mkdir -p ~/.claude/commands
-cp /tmp/skill-library/claude-code/*.md ~/.claude/commands/
-```
-
-**Per-project**:
-```bash
-gh repo clone j-alicia-long/skill-library /tmp/skill-library
-mkdir -p .claude/commands
-cp /tmp/skill-library/claude-code/*.md .claude/commands/
-```
-
-Then use `/skill-name` in Claude Code to invoke a skill.
-
-### Cursor
+## Install
 
 ```bash
-gh repo clone j-alicia-long/skill-library /tmp/skill-library
-mkdir -p .cursor/rules
-cp /tmp/skill-library/cursor/*.mdc .cursor/rules/
-```
-
-Cursor auto-discovers rules in `.cursor/rules/` and applies them when the description matches your task.
-
-### GitHub Copilot
-
-```bash
-gh repo clone j-alicia-long/skill-library /tmp/skill-library
-mkdir -p .github
-cp /tmp/skill-library/copilot/copilot-instructions.md .github/copilot-instructions.md
-```
-
-If you already have a `copilot-instructions.md`, append instead:
-```bash
-cat /tmp/skill-library/copilot/copilot-instructions.md >> .github/copilot-instructions.md
-```
-
-### OpenAI Codex
-
-```bash
-gh repo clone j-alicia-long/skill-library /tmp/skill-library
-cp /tmp/skill-library/codex/AGENTS.md AGENTS.md
-```
-
-Or append to an existing AGENTS.md:
-```bash
-cat /tmp/skill-library/codex/AGENTS.md >> AGENTS.md
-```
-
-## Keeping skills updated
-
-Skills are synced from Zo with:
-```bash
-bun run Skills/skill-sync/scripts/sync.ts --push
-```
-
-Then pull the latest on your local machine:
-```bash
-cd /tmp/skill-library && git pull
+npx skills add j-alicia-long/skill-library
 ```

@@ -1,1 +1,0 @@
-Run a `/grilling` session.
