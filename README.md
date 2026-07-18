@@ -1,4 +1,6 @@
-# Synced Skills
+# Skill Library
+
+Portable AI skills synced from [Zo Computer](https://jlong.zo.computer). Each skill is exported in the native format for Claude Code, Cursor, GitHub Copilot, and OpenAI Codex.
 
 Last synced: 2026-07-18
 
@@ -14,61 +16,69 @@ Last synced: 2026-07-18
 - **product-comparator** — Find the best deal on a product across retailers. Use when the user wants to compare prices, find the cheapest option, or decide where to buy something. Searches multiple stores, normalizes prices per unit, checks seller reputation, and recommends the best option.
 - **webapp-testing** — Toolkit for interacting with and testing local web applications using Playwright. Supports verifying frontend functionality, debugging UI behavior, capturing browser screenshots, and viewing browser logs.
 
-## Setup by platform
+## Quick install
 
 ### Claude Code
 
 **Global** (available in all projects):
 ```bash
+gh repo clone j-alicia-long/skill-library /tmp/skill-library
 mkdir -p ~/.claude/commands
-cp ~/personal-os/06-skills/claude-code/*.md ~/.claude/commands/
+cp /tmp/skill-library/claude-code/*.md ~/.claude/commands/
 ```
 
-**Per-project** (available only in that project):
+**Per-project**:
 ```bash
+gh repo clone j-alicia-long/skill-library /tmp/skill-library
 mkdir -p .claude/commands
-cp ~/personal-os/06-skills/claude-code/*.md .claude/commands/
+cp /tmp/skill-library/claude-code/*.md .claude/commands/
 ```
 
 Then use `/skill-name` in Claude Code to invoke a skill.
 
 ### Cursor
 
-Copy rules into your project:
 ```bash
+gh repo clone j-alicia-long/skill-library /tmp/skill-library
 mkdir -p .cursor/rules
-cp ~/personal-os/06-skills/cursor/*.mdc .cursor/rules/
+cp /tmp/skill-library/cursor/*.mdc .cursor/rules/
 ```
 
 Cursor auto-discovers rules in `.cursor/rules/` and applies them when the description matches your task.
 
 ### GitHub Copilot
 
-Copy into your project:
 ```bash
+gh repo clone j-alicia-long/skill-library /tmp/skill-library
 mkdir -p .github
-cp ~/personal-os/06-skills/copilot/copilot-instructions.md .github/copilot-instructions.md
+cp /tmp/skill-library/copilot/copilot-instructions.md .github/copilot-instructions.md
 ```
 
 If you already have a `copilot-instructions.md`, append instead:
 ```bash
-cat ~/personal-os/06-skills/copilot/copilot-instructions.md >> .github/copilot-instructions.md
+cat /tmp/skill-library/copilot/copilot-instructions.md >> .github/copilot-instructions.md
 ```
 
 ### OpenAI Codex
 
-Merge into your project's AGENTS.md:
 ```bash
-cat ~/personal-os/06-skills/codex/AGENTS.md >> AGENTS.md
+gh repo clone j-alicia-long/skill-library /tmp/skill-library
+cp /tmp/skill-library/codex/AGENTS.md AGENTS.md
 ```
 
-Or use it as a standalone file — Codex reads AGENTS.md from the project root.
+Or append to an existing AGENTS.md:
+```bash
+cat /tmp/skill-library/codex/AGENTS.md >> AGENTS.md
+```
 
 ## Keeping skills updated
 
-Run the sync again on Zo whenever you add or change skills:
-```
-bun run Skills/skill-sync/scripts/sync.ts
+Skills are synced from Zo with:
+```bash
+bun run Skills/skill-sync/scripts/sync.ts --push
 ```
 
-Files sync to your Mac via the Zo Desktop App automatically.
+Then pull the latest on your local machine:
+```bash
+cd /tmp/skill-library && git pull
+```
