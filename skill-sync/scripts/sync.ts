@@ -97,7 +97,7 @@ async function syncSkill(skill: SkillEntry) {
   });
 }
 
-const AUTHORED_BY_ME = new Set(["jlong.zo.computer"]);
+const AUTHORED_BY_ME = new Set(["j-alicia-long"]);
 
 interface SkillMeta {
   name: string;

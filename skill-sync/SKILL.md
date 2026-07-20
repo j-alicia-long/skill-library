@@ -3,7 +3,7 @@ name: skill-sync
 description: Sync Zo skills to the skill-library repo in agentskills.io format. Use when the user asks to sync, push, or export skills, or to install them locally. Also after adding or editing a skill in Skills/.
 compatibility: Created for Zo Computer
 metadata:
-  author: jlong.zo.computer
+  author: j-alicia-long
 ---
 Sync skills from `Skills/` and `.agents/skills/` (locally installed) to `personal-os/skills/` in [agentskills.io](https://agentskills.io) format, optionally pushing to the [skill-library repo](https://github.com/j-alicia-long/skill-library). `Skills/` takes precedence when both contain the same skill.
 

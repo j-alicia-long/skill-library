@@ -3,7 +3,7 @@ name: product-comparator
 description: Find the best deal on a product across retailers. Use when the user wants to compare prices, find the cheapest option, or decide where to buy something. Searches multiple stores, normalizes prices per unit, checks seller reputation, and recommends the best option.
 compatibility: Created for Zo Computer
 metadata:
-  author: jlong.zo.computer
+  author: j-alicia-long
 ---
 
 # Product Comparator
