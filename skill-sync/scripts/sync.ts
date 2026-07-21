@@ -1,4 +1,4 @@
-import { readdir, readFile, writeFile, exists, cp, rm } from "fs/promises";
+import { readdir, readFile, writeFile, exists, cp, rm, mkdir } from "fs/promises";
 import { join, resolve } from "path";
 import { homedir } from "os";
 import { parseArgs } from "util";
@@ -7,15 +7,13 @@ const REPO = "j-alicia-long/skill-library";
 
 // This script lives at <library>/skill-sync/scripts/sync.ts
 const DEFAULT_LIBRARY = resolve(import.meta.dir, "../..");
-const DEFAULT_APP_SKILLS = join(
-  homedir(),
-  "Library/Application Support/com.github.githubapp/app-skills"
-);
+// Personal skills dir for GitHub Copilot (app + CLI). See `copilot skill --help`.
+const DEFAULT_REGISTER_DIR = join(homedir(), ".copilot/skills");
 
 const { values: args } = parseArgs({
   options: {
     "skills-dir": { type: "string", default: DEFAULT_LIBRARY },
-    "app-skills-dir": { type: "string", default: DEFAULT_APP_SKILLS },
+    "register-dir": { type: "string", default: DEFAULT_REGISTER_DIR },
     push: { type: "boolean", default: false },
     "no-register": { type: "boolean", default: false },
     "dry-run": { type: "boolean", default: false },
@@ -25,17 +23,17 @@ const { values: args } = parseArgs({
 
 if (args.help) {
   console.log(`Usage: bun run sync.ts [options]
-  --skills-dir <path>      Skill library directory (default: ${DEFAULT_LIBRARY})
-  --app-skills-dir <path>  GitHub Copilot app skills directory
-                           (default: ${DEFAULT_APP_SKILLS})
-  --no-register            Skip registering skills with the Copilot app
-  --push                   Commit and push changes to GitHub (${REPO})
-  --dry-run                Show what would be synced without writing`);
+  --skills-dir <path>    Skill library directory (default: ${DEFAULT_LIBRARY})
+  --register-dir <path>  GitHub Copilot personal skills directory
+                         (default: ${DEFAULT_REGISTER_DIR})
+  --no-register          Skip registering skills with GitHub Copilot
+  --push                 Commit and push changes to GitHub (${REPO})
+  --dry-run              Show what would be synced without writing`);
   process.exit(0);
 }
 
 const SKILLS_DIR = args["skills-dir"]!;
-const APP_SKILLS_DIR = args["app-skills-dir"]!;
+const REGISTER_DIR = args["register-dir"]!;
 const DRY_RUN = args["dry-run"]!;
 const PUSH = args["push"]!;
 const REGISTER = !args["no-register"]!;
@@ -76,7 +74,7 @@ async function collectSkills(): Promise<SkillEntry[]> {
 
 async function registerSkill(skill: SkillEntry) {
   const src = join(skill.sourceDir, skill.name);
-  const dest = join(APP_SKILLS_DIR, skill.name);
+  const dest = join(REGISTER_DIR, skill.name);
   await rm(dest, { recursive: true, force: true });
   await cp(src, dest, {
     recursive: true,
@@ -114,6 +112,7 @@ const GROUP_MAP: Record<string, string> = {
   "grill-me": "Planning & Decision-Making",
   "grill-with-docs": "Planning & Decision-Making",
   "grilling": "Planning & Decision-Making",
+  "to-design-spec": "Planning & Decision-Making",
   "to-spec": "Planning & Decision-Making",
   "to-tickets": "Planning & Decision-Making",
   "writing-great-skills": "Planning & Decision-Making",
@@ -263,21 +262,20 @@ async function main() {
   }
 
   if (REGISTER) {
-    if (!(await exists(APP_SKILLS_DIR))) {
-      console.log(`⚠ Copilot app skills dir not found: ${APP_SKILLS_DIR} — skipping registration.`);
-    } else {
-      console.log(`\nRegistering with GitHub Copilot app (${APP_SKILLS_DIR}):`);
-      for (const skill of skills) {
-        if (DRY_RUN) {
-          console.log(`  [dry-run] ${skill.name}/`);
-        } else {
-          await registerSkill(skill);
-          console.log(`  ✓ ${skill.name}/`);
-        }
+    if (!DRY_RUN) {
+      await mkdir(REGISTER_DIR, { recursive: true });
+    }
+    console.log(`\nRegistering with GitHub Copilot (${REGISTER_DIR}):`);
+    for (const skill of skills) {
+      if (DRY_RUN) {
+        console.log(`  [dry-run] ${skill.name}/`);
+      } else {
+        await registerSkill(skill);
+        console.log(`  ✓ ${skill.name}/`);
       }
-      if (!DRY_RUN) {
-        console.log("  (restart the Copilot app or reload extensions to pick up new skills)");
-      }
+    }
+    if (!DRY_RUN) {
+      console.log("  (new Copilot sessions will pick these up; existing sessions may need a restart)");
     }
   }
 

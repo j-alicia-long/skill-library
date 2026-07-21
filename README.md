@@ -6,14 +6,14 @@ Last synced: 2026-07-21
 
 ## My Skills
 
+#### Planning & Decision-Making
+
+- **to-design-spec** — Interview the user one decision at a time, verify facts on the machine, and distill the result into a compact human-readable design spec with an architecture diagram.
+
 #### Productivity & Utilities
 
 - **product-comparator** — Find the best deal on a product across retailers. Use when the user wants to compare prices, find the cheapest option, or decide where to buy something. Searches multiple stores, normalizes prices per unit, checks seller reputation, and recommends the best option.
-- **skill-sync** — Sync the personal-os skill library — register all skills with the GitHub Copilot app and optionally push to the skill-library repo in agentskills.io format. Use when the user asks to sync, register, push, or export skills, or after adding or editing a skill in personal-os/skills/.
-
-#### Other
-
-- **to-design-spec** — Interview the user one decision at a time, verify facts on the machine, and distill the result into a compact human-readable design spec with an architecture diagram.
+- **skill-sync** — Sync the personal-os skill library — register all skills with GitHub Copilot and optionally push to the skill-library repo in agentskills.io format. Use when the user asks to sync, register, push, or export skills, or after adding or editing a skill in personal-os/skills/.
 
 ## Downloaded Skills
 
