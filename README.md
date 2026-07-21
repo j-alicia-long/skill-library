@@ -1,15 +1,19 @@
 # Skill Library
 
-Portable AI skills in [Agent Skills](https://agentskills.io) format, synced from [Zo Computer](https://jlong.zo.computer).
+Portable AI skills in [Agent Skills](https://agentskills.io) format.
 
-Last synced: 2026-07-20
+Last synced: 2026-07-21
 
 ## My Skills
 
 #### Productivity & Utilities
 
 - **product-comparator** — Find the best deal on a product across retailers. Use when the user wants to compare prices, find the cheapest option, or decide where to buy something. Searches multiple stores, normalizes prices per unit, checks seller reputation, and recommends the best option.
-- **skill-sync** — Sync Zo skills to the skill-library repo in agentskills.io format. Use when the user asks to sync, push, or export skills, or to install them locally. Also after adding or editing a skill in Skills/.
+- **skill-sync** — Sync the personal-os skill library — register all skills with the GitHub Copilot app and optionally push to the skill-library repo in agentskills.io format. Use when the user asks to sync, register, push, or export skills, or after adding or editing a skill in personal-os/skills/.
+
+#### Other
+
+- **to-design-spec** — Interview the user one decision at a time, verify facts on the machine, and distill the result into a compact human-readable design spec with an architecture diagram.
 
 ## Downloaded Skills
 
@@ -34,12 +38,17 @@ Last synced: 2026-07-20
 - **grill-with-docs** — A relentless interview to sharpen a plan or design, which also creates docs (ADR's and glossary) as we go.
 - **grilling** *(mattpocock)* — Grill the user relentlessly about a plan, decision, or idea. Use when the user wants to stress-test their thinking, or uses any 'grill' trigger phrases.
 - **to-spec** — Turn the current conversation into a spec and publish it to the project issue tracker — no interview, just synthesis of what you've already discussed.
+- **to-tickets** *(mattpocock)* — Break a plan, spec, or the current conversation into a set of tracer-bullet tickets, each declaring its blocking edges, published to the configured tracker — edges as text in one file per ticket locally, or native blocking links on a real tracker.
 - **writing-great-skills** — Reference for writing and editing skills well — the vocabulary and principles that make a skill predictable.
 
 #### Learning & Discovery
 
 - **find-skills** — Helps users discover and install agent skills when they ask questions like "how do I do X", "find a skill for X", "is there a skill that can...", or express interest in extending capabilities. This skill should be used when the user is looking for functionality that might exist as an installable skill.
 - **teach** — Teach the user a new skill or concept, within this workspace.
+
+#### Productivity & Utilities
+
+- **archive-conversation** *(nweii)* — "Create analytical archival summaries of AI conversations, capturing intellectual journeys, key insights, and technical logs. Use when archiving, saving, or documenting a chat session."
 
 ## Install
 
