@@ -104,6 +104,7 @@ const GROUP_MAP: Record<string, string> = {
   "apple-design": "Design & UI",
   "emil-design-eng": "Design & UI",
   "frontend-design": "Design & UI",
+  "visual-design-rules": "Design & UI",
   "github": "Development Workflow",
   "mcporter": "Development Workflow",
   "setup-pre-commit": "Development Workflow",

@@ -2,7 +2,7 @@
 
 Portable AI skills in [Agent Skills](https://agentskills.io) format.
 
-Last synced: 2026-07-21
+Last synced: 2026-07-22
 
 ## My Skills
 
@@ -23,6 +23,7 @@ Last synced: 2026-07-21
 - **apple-design** — Apple's approach to interface design and fluid, physical motion, translated for the web. Use when building or reviewing gesture-driven UI, spring animations, drag/swipe/sheet interactions, momentum and interruptible transitions, translucent materials and depth, typography (optical sizing, tracking, leading), reduced-motion, or the design foundations (feedback, spatial consistency, restraint) behind Apple-style interfaces.
 - **emil-design-eng** — This skill encodes Emil Kowalski's philosophy on UI polish, component design, animation decisions, and the invisible details that make software feel great.
 - **frontend-design** *(Anthropic)* — Create distinctive, production-grade frontend interfaces with high design quality. Use this skill when the user asks to build web components, pages, artifacts, posters, or applications (examples include websites, landing pages, dashboards, React components, HTML/CSS layouts, or when styling/beautifying any web UI). Generates creative, polished code and UI design that avoids generic AI aesthetics.
+- **visual-design-rules** — Safe-default visual design rules (color, layout, spacing, depth, typography) for building or reviewing any UI. Use when styling web components or pages, choosing colors, spacing, shadows, or type, or auditing a design that looks "off" and needs a concrete rule-based diagnosis.
 
 #### Development Workflow
 
