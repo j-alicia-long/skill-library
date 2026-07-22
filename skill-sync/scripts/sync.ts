@@ -137,7 +137,7 @@ async function getSkillMeta(skill: SkillEntry): Promise<SkillMeta> {
 
 function formatSkillLine(m: SkillMeta, showSource: boolean): string {
   const source = showSource && m.author ? ` *(${m.author})*` : "";
-  return `- **${m.name}**${source} — ${m.description}`;
+  return `- **[${m.name}](${m.name}/SKILL.md)**${source} — ${m.description}`;
 }
 
 function renderGroup(groupName: string, skills: SkillMeta[], showSource: boolean): string {

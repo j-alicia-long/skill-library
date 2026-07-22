@@ -10,10 +10,10 @@ Sync skills from `personal-os/skills/` (the skill library): register each skill 
 
 ```bash
 bun run personal-os/skills/skill-sync/scripts/sync.ts          # register + generate
-bun run personal-os/skills/skill-sync/scripts/sync.ts --push   # also push to GitHub
+bun run personal-os/skills/skill-sync/scripts/sync.ts --push   # also commit + push to GitHub
 ```
 
-`--help` for all options (custom paths, `--no-register`, `--dry-run`). Done when the script exits 0 and prints the skill count. With `--push`, also confirm the repo URL appears. New Copilot sessions pick up registered skills automatically; existing sessions need a restart.
+`--push` handles the whole publish: it clones the skill-library repo, copies the skills in, commits with a dated message, and pushes — no manual git steps. `--help` for all options (custom paths, `--no-register`, `--dry-run`). Done when the script exits 0 and prints the skill count. With `--push`, also confirm the repo URL appears. New Copilot sessions pick up registered skills automatically; existing sessions need a restart.
 
 ## How skills go live
 
