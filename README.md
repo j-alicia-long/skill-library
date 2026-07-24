@@ -2,7 +2,7 @@
 
 Portable AI skills in [Agent Skills](https://agentskills.io) format.
 
-Last synced: 2026-07-22
+Last synced: 2026-07-24
 
 ## My Skills
 
@@ -28,6 +28,7 @@ Last synced: 2026-07-22
 #### Development Workflow
 
 - **[github](github/SKILL.md)** *(Clawdbot)* — Interact with GitHub using the `gh` CLI. Use `gh issue`, `gh pr`, `gh run`, and `gh api` for issues, PRs, CI runs, and advanced queries.
+- **[improve-codebase-architecture](improve-codebase-architecture/SKILL.md)** — Scan a codebase for deepening opportunities, present them as a visual HTML report, then grill through whichever one you pick.
 - **[mcporter](mcporter/SKILL.md)** *(Clawdbot)* — Work with MCP servers directly
 - **[setup-pre-commit](setup-pre-commit/SKILL.md)** — Set up Husky pre-commit hooks with lint-staged (Prettier), type checking, and tests in the current repo. Use when user wants to add pre-commit hooks, set up Husky, configure lint-staged, or add commit-time formatting/typechecking/testing.
 - **[tdd](tdd/SKILL.md)** — Test-driven development. Use when the user wants to build features or fix bugs test-first, mentions "red-green-refactor", or wants integration tests.

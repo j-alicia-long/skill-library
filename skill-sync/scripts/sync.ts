@@ -111,6 +111,7 @@ const GROUP_MAP: Record<string, string> = {
   "tdd": "Development Workflow",
   "webapp-testing": "Development Workflow",
   "grill-me": "Planning & Decision-Making",
+  "improve-codebase-architecture": "Development Workflow",
   "grill-with-docs": "Planning & Decision-Making",
   "grilling": "Planning & Decision-Making",
   "to-design-spec": "Planning & Decision-Making",
