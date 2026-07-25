@@ -57,3 +57,8 @@ Last synced: 2026-07-24
 ```bash
 npx skills add j-alicia-long/skill-library
 ```
+
+## References
+
+- [mattpocock/skills — engineering](https://github.com/mattpocock/skills/tree/main/skills/engineering)
+- [nweii/agent-stuff — skills](https://github.com/nweii/agent-stuff/tree/master/skills)
