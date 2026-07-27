@@ -1,14 +1,21 @@
-import { readdir, readFile, writeFile, mkdir, exists, cp, rm } from "fs/promises";
-import { join } from "path";
+import { readdir, readFile, writeFile, exists, cp, rm, mkdir } from "fs/promises";
+import { join, resolve } from "path";
+import { homedir } from "os";
 import { parseArgs } from "util";
 
 const REPO = "j-alicia-long/skill-library";
 
+// This script lives at <library>/skill-sync/scripts/sync.ts
+const DEFAULT_LIBRARY = resolve(import.meta.dir, "../..");
+// Personal skills dir for GitHub Copilot (app + CLI). See `copilot skill --help`.
+const DEFAULT_REGISTER_DIR = join(homedir(), ".copilot/skills");
+
 const { values: args } = parseArgs({
   options: {
-    "skills-dir": { type: "string", default: "/home/workspace/Skills" },
-    "output-dir": { type: "string", default: "/home/workspace/personal-os/skills" },
+    "skills-dir": { type: "string", default: DEFAULT_LIBRARY },
+    "register-dir": { type: "string", default: DEFAULT_REGISTER_DIR },
     push: { type: "boolean", default: false },
+    "no-register": { type: "boolean", default: false },
     "dry-run": { type: "boolean", default: false },
     help: { type: "boolean", default: false },
   },
@@ -16,27 +23,23 @@ const { values: args } = parseArgs({
 
 if (args.help) {
   console.log(`Usage: bun run sync.ts [options]
-  --skills-dir <path>   Zo skills directory (default: /home/workspace/Skills)
-  --output-dir <path>   Output directory (default: /home/workspace/personal-os/skills)
-  --push                Commit and push changes to GitHub (${REPO})
-  --dry-run             Show what would be synced without writing
-
-Also scans .agents/skills/ and .claude/skills/ for locally installed skills.`);
+  --skills-dir <path>    Skill library directory (default: ${DEFAULT_LIBRARY})
+  --register-dir <path>  GitHub Copilot personal skills directory
+                         (default: ${DEFAULT_REGISTER_DIR})
+  --no-register          Skip registering skills with GitHub Copilot
+  --push                 Commit and push changes to GitHub (${REPO})
+  --dry-run              Show what would be synced without writing`);
   process.exit(0);
 }
 
 const SKILLS_DIR = args["skills-dir"]!;
-const OUTPUT_DIR = args["output-dir"]!;
+const REGISTER_DIR = args["register-dir"]!;
 const DRY_RUN = args["dry-run"]!;
 const PUSH = args["push"]!;
-
-const LOCAL_DIRS = [
-  "/home/workspace/.agents/skills",
-  "/home/workspace/.claude/skills",
-];
+const REGISTER = !args["no-register"]!;
 
 const SKIP = new Set<string>();
-const EXCLUDE = new Set(["agents", "node_modules", ".git"]);
+const EXCLUDE = new Set(["node_modules", ".git"]);
 
 interface SkillEntry {
   name: string;
@@ -56,40 +59,22 @@ function parseFrontmatter(content: string): Record<string, string> {
   return meta;
 }
 
-async function scanDir(dir: string): Promise<Map<string, string>> {
-  const skills = new Map<string, string>();
-  if (!(await exists(dir))) return skills;
-  const entries = await readdir(dir, { withFileTypes: true });
-  for (const entry of entries) {
-    if (!entry.isDirectory() || SKIP.has(entry.name)) continue;
-    if (await exists(join(dir, entry.name, "SKILL.md"))) {
-      skills.set(entry.name, dir);
-    }
-  }
-  return skills;
-}
-
 async function collectSkills(): Promise<SkillEntry[]> {
-  const merged = new Map<string, string>();
-
-  for (const dir of LOCAL_DIRS) {
-    for (const [name, src] of await scanDir(dir)) {
-      merged.set(name, src);
+  const skills: SkillEntry[] = [];
+  if (!(await exists(SKILLS_DIR))) return skills;
+  const entries = await readdir(SKILLS_DIR, { withFileTypes: true });
+  for (const entry of entries) {
+    if (!entry.isDirectory() || SKIP.has(entry.name) || EXCLUDE.has(entry.name)) continue;
+    if (await exists(join(SKILLS_DIR, entry.name, "SKILL.md"))) {
+      skills.push({ name: entry.name, sourceDir: SKILLS_DIR });
     }
   }
-
-  for (const [name, src] of await scanDir(SKILLS_DIR)) {
-    merged.set(name, src);
-  }
-
-  return Array.from(merged.entries())
-    .map(([name, sourceDir]) => ({ name, sourceDir }))
-    .sort((a, b) => a.name.localeCompare(b.name));
+  return skills.sort((a, b) => a.name.localeCompare(b.name));
 }
 
-async function syncSkill(skill: SkillEntry) {
+async function registerSkill(skill: SkillEntry) {
   const src = join(skill.sourceDir, skill.name);
-  const dest = join(OUTPUT_DIR, skill.name);
+  const dest = join(REGISTER_DIR, skill.name);
   await rm(dest, { recursive: true, force: true });
   await cp(src, dest, {
     recursive: true,
@@ -119,18 +104,24 @@ const GROUP_MAP: Record<string, string> = {
   "apple-design": "Design & UI",
   "emil-design-eng": "Design & UI",
   "frontend-design": "Design & UI",
+  "visual-design-rules": "Design & UI",
   "github": "Development Workflow",
   "mcporter": "Development Workflow",
   "setup-pre-commit": "Development Workflow",
   "tdd": "Development Workflow",
   "webapp-testing": "Development Workflow",
   "grill-me": "Planning & Decision-Making",
+  "improve-codebase-architecture": "Development Workflow",
   "grill-with-docs": "Planning & Decision-Making",
   "grilling": "Planning & Decision-Making",
+  "to-design-spec": "Planning & Decision-Making",
   "to-spec": "Planning & Decision-Making",
+  "to-tickets": "Planning & Decision-Making",
+  "writing-great-agentsmd": "Planning & Decision-Making",
   "writing-great-skills": "Planning & Decision-Making",
   "find-skills": "Learning & Discovery",
   "teach": "Learning & Discovery",
+  "archive-conversation": "Productivity & Utilities",
   "product-comparator": "Productivity & Utilities",
   "skill-sync": "Productivity & Utilities",
 };
@@ -148,7 +139,7 @@ async function getSkillMeta(skill: SkillEntry): Promise<SkillMeta> {
 
 function formatSkillLine(m: SkillMeta, showSource: boolean): string {
   const source = showSource && m.author ? ` *(${m.author})*` : "";
-  return `- **${m.name}**${source} — ${m.description}`;
+  return `- **[${m.name}](${m.name}/SKILL.md)**${source} — ${m.description}`;
 }
 
 function renderGroup(groupName: string, skills: SkillMeta[], showSource: boolean): string {
@@ -185,7 +176,7 @@ async function generateReadme(skills: SkillEntry[]): Promise<string> {
   const parts: string[] = [
     `# Skill Library`,
     ``,
-    `Portable AI skills in [Agent Skills](https://agentskills.io) format, synced from [Zo Computer](https://jlong.zo.computer).`,
+    `Portable AI skills in [Agent Skills](https://agentskills.io) format.`,
     ``,
     `Last synced: ${date}`,
   ];
@@ -233,7 +224,7 @@ async function gitPush(skillCount: number) {
     await rm(join(cloneDir, entry), { recursive: true, force: true });
   }
 
-  await Bun.spawn(["bash", "-c", `cp -r "${OUTPUT_DIR}"/* "${cloneDir}/"`]).exited;
+  await Bun.spawn(["bash", "-c", `cp -r "${SKILLS_DIR}"/* "${cloneDir}/"`]).exited;
 
   await Bun.spawn(["git", "add", "-A"], { cwd: cloneDir }).exited;
 
@@ -266,38 +257,41 @@ async function gitPush(skillCount: number) {
 async function main() {
   const skills = await collectSkills();
 
-  const zoCount = skills.filter((s) => s.sourceDir === SKILLS_DIR).length;
-  const localCount = skills.length - zoCount;
-  console.log(`Found ${skills.length} skills (${zoCount} from Skills/, ${localCount} locally installed)`);
+  console.log(`Found ${skills.length} skills in ${SKILLS_DIR}`);
 
   if (skills.length === 0) {
     console.log("No skills to sync.");
     return;
   }
 
-  await mkdir(OUTPUT_DIR, { recursive: true });
-
-  for (const skill of skills) {
-    const tag = skill.sourceDir !== SKILLS_DIR ? " (local)" : "";
-    if (DRY_RUN) {
-      console.log(`  [dry-run] ${skill.name}/${tag}`);
-    } else {
-      await syncSkill(skill);
-      console.log(`  ✓ ${skill.name}/${tag}`);
+  if (REGISTER) {
+    if (!DRY_RUN) {
+      await mkdir(REGISTER_DIR, { recursive: true });
+    }
+    console.log(`\nRegistering with GitHub Copilot (${REGISTER_DIR}):`);
+    for (const skill of skills) {
+      if (DRY_RUN) {
+        console.log(`  [dry-run] ${skill.name}/`);
+      } else {
+        await registerSkill(skill);
+        console.log(`  ✓ ${skill.name}/`);
+      }
+    }
+    if (!DRY_RUN) {
+      console.log("  (new Copilot sessions will pick these up; existing sessions may need a restart)");
     }
   }
 
   const readme = await generateReadme(skills);
   if (!DRY_RUN) {
-    await writeFile(join(OUTPUT_DIR, "README.md"), readme);
+    await writeFile(join(SKILLS_DIR, "README.md"), readme);
   }
 
-  console.log(`\n✅ ${DRY_RUN ? "Would sync" : "Synced"} ${skills.length} skills to ${OUTPUT_DIR}`);
+  console.log(`\n✅ ${DRY_RUN ? "Would sync" : "Synced"} ${skills.length} skills`);
 
   if (PUSH && !DRY_RUN) {
     await gitPush(skills.length);
   } else if (!DRY_RUN) {
-    console.log("Files will sync to your Mac via the Zo Desktop App.");
     console.log(`Run with --push to also push to https://github.com/${REPO}`);
   }
 }
