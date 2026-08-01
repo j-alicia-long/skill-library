@@ -53,6 +53,10 @@ Last synced: 2026-07-27
 
 - **[archive-conversation](archive-conversation/SKILL.md)** *(nweii)* — "Create analytical archival summaries of AI conversations, capturing intellectual journeys, key insights, and technical logs. Use when archiving, saving, or documenting a chat session."
 
+## Global Copilot Instructions
+
+[`copilot-instructions.md`](copilot-instructions.md) is the canonical copy of my global Copilot instructions. The live path `~/.copilot/copilot-instructions.md` is a symlink pointing to this file (in the primary checkout), so edits here are version-controlled and picked up by the Copilot app.
+
 ## Install
 
 ```bash
