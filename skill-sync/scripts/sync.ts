@@ -1,45 +1,90 @@
-import { readdir, readFile, writeFile, exists, cp, rm, mkdir } from "fs/promises";
-import { join, resolve } from "path";
-import { homedir } from "os";
+import { cp, exists, mkdir, readdir, readFile, rm, writeFile } from "fs/promises";
+import { join } from "path";
 import { parseArgs } from "util";
 
 const REPO = "j-alicia-long/skill-library";
+const DEFAULT_SKILLS_DIR = "/home/workspace/Skills";
+const DEFAULT_LIBRARY_DIR = "/home/workspace/personal-os/02-projects/skill-library";
 
-// This script lives at <library>/skill-sync/scripts/sync.ts
-const DEFAULT_LIBRARY = resolve(import.meta.dir, "../..");
-// Personal skills dir for GitHub Copilot (app + CLI). See `copilot skill --help`.
-const DEFAULT_REGISTER_DIR = join(homedir(), ".copilot/skills");
+// Additional local sources scanned when pushing (locally installed skills).
+const LOCAL_SOURCE_DIRS = [
+  "/home/workspace/.agents/skills",
+  "/home/workspace/.claude/skills",
+];
 
-const { values: args } = parseArgs({
+// Never copied into either side.
+const EXCLUDE = new Set(["node_modules", ".git", "agents"]);
+// Files that live at the library root but are not skills.
+const NON_SKILL_ENTRIES = new Set(["README.md", ".git", ".github"]);
+
+const { values: args, positionals } = parseArgs({
+  allowPositionals: true,
   options: {
-    "skills-dir": { type: "string", default: DEFAULT_LIBRARY },
-    "register-dir": { type: "string", default: DEFAULT_REGISTER_DIR },
-    push: { type: "boolean", default: false },
-    "no-register": { type: "boolean", default: false },
+    "skills-dir": { type: "string", default: DEFAULT_SKILLS_DIR },
+    "library-dir": { type: "string", default: DEFAULT_LIBRARY_DIR },
+    confirm: { type: "boolean", default: false },
     "dry-run": { type: "boolean", default: false },
     help: { type: "boolean", default: false },
   },
 });
 
-if (args.help) {
-  console.log(`Usage: bun run sync.ts [options]
-  --skills-dir <path>    Skill library directory (default: ${DEFAULT_LIBRARY})
-  --register-dir <path>  GitHub Copilot personal skills directory
-                         (default: ${DEFAULT_REGISTER_DIR})
-  --no-register          Skip registering skills with GitHub Copilot
-  --push                 Commit and push changes to GitHub (${REPO})
-  --dry-run              Show what would be synced without writing`);
-  process.exit(0);
+const cmd = positionals[0];
+const VALID = ["status", "pull", "push"];
+
+if (args.help || !cmd || !VALID.includes(cmd)) {
+  console.log(`Usage: bun run sync.ts <command> [options]
+
+Bidirectional sync between the local skills directory and the shared library repo.
+
+Commands:
+  status   Show what pull and push would change (read-only, no writes).
+  pull     Pull the library repo and merge its skills into the local skills directory.
+           Additive overlay: new/updated skills are copied down; local-only files are kept.
+  push     Copy local skills into the library and push to GitHub.
+           Additive upsert: never deletes library skills that are absent locally.
+           Requires --confirm to actually commit & push (otherwise previews the diff).
+
+Options:
+  --skills-dir <path>    Local skills directory (default: ${DEFAULT_SKILLS_DIR})
+  --library-dir <path>   Local git checkout of the library repo (default: ${DEFAULT_LIBRARY_DIR})
+  --confirm              (push) Commit & push. Without it, push only stages and previews.
+  --dry-run              (pull) Report changes without writing.
+  --help                 Show this help.
+
+The library repo is https://github.com/${REPO}. 'pull' and 'push' operate through the
+local checkout at --library-dir, which must be a git clone of that repo.
+When pushing, also scans ${LOCAL_SOURCE_DIRS.join(", ")} for locally installed skills.`);
+  process.exit(args.help ? 0 : 1);
 }
 
 const SKILLS_DIR = args["skills-dir"]!;
-const REGISTER_DIR = args["register-dir"]!;
+const LIBRARY_DIR = args["library-dir"]!;
+const CONFIRM = args.confirm!;
 const DRY_RUN = args["dry-run"]!;
-const PUSH = args["push"]!;
-const REGISTER = !args["no-register"]!;
 
-const SKIP = new Set<string>();
-const EXCLUDE = new Set(["node_modules", ".git"]);
+function fail(msg: string): never {
+  console.error(`✗ ${msg}`);
+  process.exit(1);
+}
+
+async function git(cwd: string, ...gitArgs: string[]) {
+  const p = Bun.spawn(["git", ...gitArgs], { cwd, stdout: "pipe", stderr: "pipe" });
+  const [stdout, stderr] = await Promise.all([
+    new Response(p.stdout).text(),
+    new Response(p.stderr).text(),
+  ]);
+  const code = await p.exited;
+  return { code, stdout, stderr };
+}
+
+async function requireLibraryCheckout() {
+  if (!(await exists(join(LIBRARY_DIR, ".git")))) {
+    fail(
+      `${LIBRARY_DIR} is not a git checkout of ${REPO}.\n` +
+        `  Clone it first: git clone https://github.com/${REPO}.git "${LIBRARY_DIR}"`,
+    );
+  }
+}
 
 interface SkillEntry {
   name: string;
@@ -59,37 +104,64 @@ function parseFrontmatter(content: string): Record<string, string> {
   return meta;
 }
 
-async function collectSkills(): Promise<SkillEntry[]> {
-  const skills: SkillEntry[] = [];
-  if (!(await exists(SKILLS_DIR))) return skills;
-  const entries = await readdir(SKILLS_DIR, { withFileTypes: true });
+// Directories (containing a SKILL.md) inside `dir`, keyed by skill name.
+async function scanDir(dir: string): Promise<Map<string, string>> {
+  const skills = new Map<string, string>();
+  if (!(await exists(dir))) return skills;
+  const entries = await readdir(dir, { withFileTypes: true });
   for (const entry of entries) {
-    if (!entry.isDirectory() || SKIP.has(entry.name) || EXCLUDE.has(entry.name)) continue;
-    if (await exists(join(SKILLS_DIR, entry.name, "SKILL.md"))) {
-      skills.push({ name: entry.name, sourceDir: SKILLS_DIR });
-    }
+    if (!entry.isDirectory() || EXCLUDE.has(entry.name) || NON_SKILL_ENTRIES.has(entry.name)) continue;
+    if (await exists(join(dir, entry.name, "SKILL.md"))) skills.set(entry.name, dir);
   }
-  return skills.sort((a, b) => a.name.localeCompare(b.name));
+  return skills;
 }
 
-async function registerSkill(skill: SkillEntry) {
-  const src = join(skill.sourceDir, skill.name);
-  const dest = join(REGISTER_DIR, skill.name);
-  await rm(dest, { recursive: true, force: true });
-  await cp(src, dest, {
-    recursive: true,
-    filter: (source) => !EXCLUDE.has(source.split("/").pop()!),
-  });
+// Local skills: LOCAL_SOURCE_DIRS first, then SKILLS_DIR (which wins on name clash).
+async function collectLocalSkills(): Promise<SkillEntry[]> {
+  const merged = new Map<string, string>();
+  for (const dir of LOCAL_SOURCE_DIRS) {
+    for (const [name, src] of await scanDir(dir)) merged.set(name, src);
+  }
+  for (const [name, src] of await scanDir(SKILLS_DIR)) merged.set(name, src);
+  return Array.from(merged.entries())
+    .map(([name, sourceDir]) => ({ name, sourceDir }))
+    .sort((a, b) => a.name.localeCompare(b.name));
 }
+
+const copyFilter = (source: string) => !EXCLUDE.has(source.split("/").pop()!);
+
+// Relative file paths under `dir`, excluding EXCLUDE dirs.
+async function walkFiles(dir: string, base = dir): Promise<string[]> {
+  const out: string[] = [];
+  const entries = await readdir(dir, { withFileTypes: true });
+  for (const entry of entries) {
+    if (EXCLUDE.has(entry.name)) continue;
+    const full = join(dir, entry.name);
+    if (entry.isDirectory()) out.push(...(await walkFiles(full, base)));
+    else out.push(full.slice(base.length + 1));
+  }
+  return out;
+}
+
+// True if any file present in `srcDir` is missing from or differs in `destDir`.
+// (One-directional: ignores files that exist only in destDir.)
+async function srcHasChanges(srcDir: string, destDir: string): Promise<boolean> {
+  if (!(await exists(destDir))) return true;
+  for (const rel of await walkFiles(srcDir)) {
+    const a = join(srcDir, rel);
+    const b = join(destDir, rel);
+    if (!(await exists(b))) return true;
+    const [ca, cb] = await Promise.all([readFile(a), readFile(b)]);
+    if (!ca.equals(cb)) return true;
+  }
+  return false;
+}
+
+// ---------------------------------------------------------------------------
+// README generation (for the library repo)
+// ---------------------------------------------------------------------------
 
 const AUTHORED_BY_ME = new Set(["j-alicia-long"]);
-
-interface SkillMeta {
-  name: string;
-  description: string;
-  author: string;
-  group: string;
-}
 
 const GROUP_ORDER = [
   "Design & UI",
@@ -110,8 +182,8 @@ const GROUP_MAP: Record<string, string> = {
   "setup-pre-commit": "Development Workflow",
   "tdd": "Development Workflow",
   "webapp-testing": "Development Workflow",
-  "grill-me": "Planning & Decision-Making",
   "improve-codebase-architecture": "Development Workflow",
+  "grill-me": "Planning & Decision-Making",
   "grill-with-docs": "Planning & Decision-Making",
   "grilling": "Planning & Decision-Making",
   "to-design-spec": "Planning & Decision-Making",
@@ -126,51 +198,52 @@ const GROUP_MAP: Record<string, string> = {
   "skill-sync": "Productivity & Utilities",
 };
 
-async function getSkillMeta(skill: SkillEntry): Promise<SkillMeta> {
-  const content = await readFile(join(skill.sourceDir, skill.name, "SKILL.md"), "utf-8");
-  const fm = parseFrontmatter(content);
-  return {
-    name: skill.name,
-    description: fm.description || "",
-    author: fm.author || "",
-    group: GROUP_MAP[skill.name] || "Other",
-  };
+interface SkillMeta {
+  name: string;
+  description: string;
+  author: string;
+  group: string;
 }
 
-function formatSkillLine(m: SkillMeta, showSource: boolean): string {
-  const source = showSource && m.author ? ` *(${m.author})*` : "";
-  return `- **[${m.name}](${m.name}/SKILL.md)**${source} — ${m.description}`;
+async function getSkillMeta(dir: string, name: string): Promise<SkillMeta> {
+  const content = await readFile(join(dir, name, "SKILL.md"), "utf-8");
+  const fm = parseFrontmatter(content);
+  return {
+    name,
+    description: fm.description || "",
+    author: fm.author || "",
+    group: GROUP_MAP[name] || "Other",
+  };
 }
 
 function renderGroup(groupName: string, skills: SkillMeta[], showSource: boolean): string {
   const lines = skills
     .sort((a, b) => a.name.localeCompare(b.name))
-    .map((s) => formatSkillLine(s, showSource));
+    .map((m) => {
+      const source = showSource && m.author ? ` *(${m.author})*` : "";
+      return `- **[${m.name}](${m.name}/SKILL.md)**${source} — ${m.description}`;
+    });
   return `#### ${groupName}\n\n${lines.join("\n")}`;
 }
 
-async function generateReadme(skills: SkillEntry[]): Promise<string> {
-  const metas = await Promise.all(skills.map(getSkillMeta));
+function groupedSections(list: SkillMeta[], showSource: boolean): string {
+  const byGroup = new Map<string, SkillMeta[]>();
+  for (const m of list) {
+    const arr = byGroup.get(m.group) || [];
+    arr.push(m);
+    byGroup.set(m.group, arr);
+  }
+  const sections: string[] = [];
+  for (const g of GROUP_ORDER) if (byGroup.has(g)) sections.push(renderGroup(g, byGroup.get(g)!, showSource));
+  for (const [g, items] of byGroup) if (!GROUP_ORDER.includes(g)) sections.push(renderGroup(g, items, showSource));
+  return sections.join("\n\n");
+}
 
+async function generateReadme(libraryDir: string): Promise<string> {
+  const names = [...(await scanDir(libraryDir)).keys()].sort();
+  const metas = await Promise.all(names.map((n) => getSkillMeta(libraryDir, n)));
   const authored = metas.filter((m) => AUTHORED_BY_ME.has(m.author));
   const downloaded = metas.filter((m) => !AUTHORED_BY_ME.has(m.author));
-
-  function groupedSections(list: SkillMeta[], showSource: boolean): string {
-    const byGroup = new Map<string, SkillMeta[]>();
-    for (const m of list) {
-      const arr = byGroup.get(m.group) || [];
-      arr.push(m);
-      byGroup.set(m.group, arr);
-    }
-    const sections: string[] = [];
-    for (const g of GROUP_ORDER) {
-      if (byGroup.has(g)) sections.push(renderGroup(g, byGroup.get(g)!, showSource));
-    }
-    for (const [g, items] of byGroup) {
-      if (!GROUP_ORDER.includes(g)) sections.push(renderGroup(g, items, showSource));
-    }
-    return sections.join("\n\n");
-  }
 
   const date = new Date().toISOString().split("T")[0];
   const parts: string[] = [
@@ -180,120 +253,145 @@ async function generateReadme(skills: SkillEntry[]): Promise<string> {
     ``,
     `Last synced: ${date}`,
   ];
-
-  if (authored.length > 0) {
-    parts.push("", `## My Skills`, "", groupedSections(authored, false));
-  }
-
-  if (downloaded.length > 0) {
-    parts.push("", `## Downloaded Skills`, "", groupedSections(downloaded, true));
-  }
-
-  parts.push(
-    "",
-    `## Install`,
-    "",
-    "```bash",
-    "npx skills add j-alicia-long/skill-library",
-    "```",
-    ""
-  );
-
+  if (authored.length) parts.push("", `## My Skills`, "", groupedSections(authored, false));
+  if (downloaded.length) parts.push("", `## Downloaded Skills`, "", groupedSections(downloaded, true));
+  parts.push("", `## Install`, "", "```bash", `npx skills add ${REPO}`, "```", "");
   return parts.join("\n");
 }
 
-async function gitPush(skillCount: number) {
-  const cloneDir = "/tmp/skill-library";
+// ---------------------------------------------------------------------------
+// Commands
+// ---------------------------------------------------------------------------
 
-  await Bun.spawn(["rm", "-rf", cloneDir]).exited;
+async function pull() {
+  await requireLibraryCheckout();
+  console.log(`↓ Pulling latest from ${REPO}...`);
+  const pl = await git(LIBRARY_DIR, "pull", "--ff-only");
+  process.stdout.write(pl.stdout.trim() ? pl.stdout : "");
+  if (pl.code !== 0) fail(`git pull failed:\n${pl.stderr.trim()}`);
 
-  console.log(`\n📦 Cloning ${REPO}...`);
-  const clone = Bun.spawn(["gh", "repo", "clone", REPO, cloneDir], { stderr: "pipe" });
-  const cloneErr = await new Response(clone.stderr).text();
-  if ((await clone.exited) !== 0) {
-    console.error(`Clone failed: ${cloneErr}`);
-    process.exit(1);
+  const libSkills = [...(await scanDir(LIBRARY_DIR)).keys()].sort();
+  const added: string[] = [];
+  const updated: string[] = [];
+  let unchanged = 0;
+
+  for (const name of libSkills) {
+    const libPath = join(LIBRARY_DIR, name);
+    const localPath = join(SKILLS_DIR, name);
+    const existsLocal = await exists(join(localPath, "SKILL.md"));
+    if (existsLocal && !(await srcHasChanges(libPath, localPath))) {
+      unchanged++;
+      continue;
+    }
+    if (!DRY_RUN) await cp(libPath, localPath, { recursive: true, force: true, filter: copyFilter });
+    (existsLocal ? updated : added).push(name);
   }
 
-  await Bun.spawn(["git", "config", "user.name", "Jennifer Long"], { cwd: cloneDir }).exited;
-  await Bun.spawn(["git", "config", "user.email", "4724192+j-alicia-long@users.noreply.github.com"], { cwd: cloneDir }).exited;
+  const verb = DRY_RUN ? "Would merge" : "Merged";
+  console.log(`\n${verb} from library → ${SKILLS_DIR}`);
+  if (added.length) console.log(`  + new:     ${added.join(", ")}`);
+  if (updated.length) console.log(`  ~ updated: ${updated.join(", ")}`);
+  console.log(`  = unchanged: ${unchanged}`);
+  if (!added.length && !updated.length) console.log("  Local is already up to date with the library.");
+  console.log(
+    `\nNote: pull overlays library files onto local skills. Local-only files are preserved, but ` +
+      `local edits to a skill that also changed upstream will be overwritten. Push local work first if unsure.`,
+  );
+}
 
-  const cloneEntries = await readdir(cloneDir);
-  for (const entry of cloneEntries) {
-    if (entry === ".git") continue;
-    await rm(join(cloneDir, entry), { recursive: true, force: true });
+async function stageIntoLibrary(): Promise<{ skills: SkillEntry[]; localCount: number }> {
+  const skills = await collectLocalSkills();
+  const localCount = skills.filter((s) => s.sourceDir !== SKILLS_DIR).length;
+  await mkdir(LIBRARY_DIR, { recursive: true });
+  for (const skill of skills) {
+    const dest = join(LIBRARY_DIR, skill.name);
+    await rm(dest, { recursive: true, force: true });
+    await cp(join(skill.sourceDir, skill.name), dest, { recursive: true, filter: copyFilter });
   }
+  await writeFile(join(LIBRARY_DIR, "README.md"), await generateReadme(LIBRARY_DIR));
+  return { skills, localCount };
+}
 
-  await Bun.spawn(["bash", "-c", `cp -r "${SKILLS_DIR}"/* "${cloneDir}/"`]).exited;
+async function push() {
+  await requireLibraryCheckout();
+  const { skills, localCount } = await stageIntoLibrary();
+  console.log(
+    `↑ Staged ${skills.length} local skills into the library ` +
+      `(${skills.length - localCount} from ${SKILLS_DIR}, ${localCount} locally installed).`,
+  );
+  console.log(`  (upsert only — library skills absent locally are left untouched)\n`);
 
-  await Bun.spawn(["git", "add", "-A"], { cwd: cloneDir }).exited;
-
-  const status = Bun.spawn(["git", "status", "--porcelain"], { cwd: cloneDir });
-  const statusOut = await new Response(status.stdout).text();
-  await status.exited;
-
-  if (!statusOut.trim()) {
-    console.log("No changes to push — repo is up to date.");
+  await git(LIBRARY_DIR, "add", "-A");
+  const status = await git(LIBRARY_DIR, "status", "--porcelain");
+  if (!status.stdout.trim()) {
+    console.log("✓ Library already matches local skills — nothing to push.");
     return;
   }
 
-  const date = new Date().toISOString().split("T")[0];
-  const msg = `Sync ${skillCount} skills (${date})`;
+  const statDiff = await git(LIBRARY_DIR, "--no-pager", "diff", "--cached", "--stat");
+  console.log("Pending changes to push:");
+  console.log(statDiff.stdout.trim());
 
-  const commit = Bun.spawn(["git", "commit", "-m", msg], { cwd: cloneDir });
-  const commitOut = await new Response(commit.stdout).text();
-  await commit.exited;
-  console.log(`📦 ${commitOut.trim()}`);
-
-  const push = Bun.spawn(["git", "push"], { cwd: cloneDir, stderr: "pipe" });
-  const pushErr = await new Response(push.stderr).text();
-  if ((await push.exited) !== 0) {
-    console.error(`Push failed: ${pushErr}`);
-    process.exit(1);
+  if (!CONFIRM) {
+    console.log(
+      `\n⏸  Preview only — nothing committed or pushed.\n` +
+        `   Review the changes above, then run:  bun run sync.ts push --confirm`,
+    );
+    return;
   }
+
+  await git(LIBRARY_DIR, "config", "user.name", "Jennifer Long");
+  await git(LIBRARY_DIR, "config", "user.email", "4724192+j-alicia-long@users.noreply.github.com");
+  const date = new Date().toISOString().split("T")[0];
+  const commit = await git(LIBRARY_DIR, "commit", "-m", `Sync ${skills.length} skills (${date})`);
+  console.log(`📦 ${commit.stdout.trim()}`);
+  const pushed = await git(LIBRARY_DIR, "push");
+  if (pushed.code !== 0) fail(`Push failed:\n${pushed.stderr.trim()}`);
   console.log(`✓ Pushed to https://github.com/${REPO}`);
 }
 
+async function status() {
+  await requireLibraryCheckout();
+  const local = await collectLocalSkills();
+  const localMap = new Map(local.map((s) => [s.name, s.sourceDir]));
+  const libNames = [...(await scanDir(LIBRARY_DIR)).keys()];
+
+  // Pull direction: library → local
+  const pullNew: string[] = [];
+  const pullUpdated: string[] = [];
+  for (const name of libNames) {
+    const localPath = join(SKILLS_DIR, name);
+    if (!(await exists(join(localPath, "SKILL.md")))) pullNew.push(name);
+    else if (await srcHasChanges(join(LIBRARY_DIR, name), localPath)) pullUpdated.push(name);
+  }
+
+  // Push direction: local → library
+  const pushNew: string[] = [];
+  const pushUpdated: string[] = [];
+  for (const [name, srcDir] of localMap) {
+    const libPath = join(LIBRARY_DIR, name);
+    if (!(await exists(join(libPath, "SKILL.md")))) pushNew.push(name);
+    else if (await srcHasChanges(join(srcDir, name), libPath)) pushUpdated.push(name);
+  }
+
+  const libOnly = libNames.filter((n) => !localMap.has(n)).sort();
+
+  const fmt = (a: string[]) => (a.length ? a.sort().join(", ") : "none");
+  console.log(`Skill sync status  (local: ${SKILLS_DIR})`);
+  console.log(`                   (library: ${LIBRARY_DIR})\n`);
+  console.log(`↓ pull would bring DOWN from library:`);
+  console.log(`    new:     ${fmt(pullNew)}`);
+  console.log(`    updated: ${fmt(pullUpdated)}`);
+  console.log(`\n↑ push would send UP to library:`);
+  console.log(`    new:     ${fmt(pushNew)}`);
+  console.log(`    updated: ${fmt(pushUpdated)}`);
+  console.log(`\nℹ library-only skills (kept by push, pulled down on next pull): ${fmt(libOnly)}`);
+}
+
 async function main() {
-  const skills = await collectSkills();
-
-  console.log(`Found ${skills.length} skills in ${SKILLS_DIR}`);
-
-  if (skills.length === 0) {
-    console.log("No skills to sync.");
-    return;
-  }
-
-  if (REGISTER) {
-    if (!DRY_RUN) {
-      await mkdir(REGISTER_DIR, { recursive: true });
-    }
-    console.log(`\nRegistering with GitHub Copilot (${REGISTER_DIR}):`);
-    for (const skill of skills) {
-      if (DRY_RUN) {
-        console.log(`  [dry-run] ${skill.name}/`);
-      } else {
-        await registerSkill(skill);
-        console.log(`  ✓ ${skill.name}/`);
-      }
-    }
-    if (!DRY_RUN) {
-      console.log("  (new Copilot sessions will pick these up; existing sessions may need a restart)");
-    }
-  }
-
-  const readme = await generateReadme(skills);
-  if (!DRY_RUN) {
-    await writeFile(join(SKILLS_DIR, "README.md"), readme);
-  }
-
-  console.log(`\n✅ ${DRY_RUN ? "Would sync" : "Synced"} ${skills.length} skills`);
-
-  if (PUSH && !DRY_RUN) {
-    await gitPush(skills.length);
-  } else if (!DRY_RUN) {
-    console.log(`Run with --push to also push to https://github.com/${REPO}`);
-  }
+  if (cmd === "pull") await pull();
+  else if (cmd === "push") await push();
+  else if (cmd === "status") await status();
 }
 
 main().catch((e) => {

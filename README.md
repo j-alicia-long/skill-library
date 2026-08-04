@@ -2,7 +2,7 @@
 
 Portable AI skills in [Agent Skills](https://agentskills.io) format.
 
-Last synced: 2026-07-27
+Last synced: 2026-07-28
 
 ## My Skills
 
@@ -14,7 +14,7 @@ Last synced: 2026-07-27
 #### Productivity & Utilities
 
 - **[product-comparator](product-comparator/SKILL.md)** — Find the best deal on a product across retailers. Use when the user wants to compare prices, find the cheapest option, or decide where to buy something. Searches multiple stores, normalizes prices per unit, checks seller reputation, and recommends the best option.
-- **[skill-sync](skill-sync/SKILL.md)** — Sync the personal-os skill library — register all skills with GitHub Copilot and optionally push to the skill-library repo in agentskills.io format. Use when the user asks to sync, register, push, or export skills, or after adding or editing a skill in personal-os/skills/.
+- **[skill-sync](skill-sync/SKILL.md)** — Bidirectionally sync skills between the local skills directory and the shared skill-library repo — pull & merge changes down, or push new/updated skills up to GitHub. Use when the user asks to sync, pull, push, or export skills, or after adding or editing a skill locally. Always confirm with the user before pushing.
 
 ## Downloaded Skills
 
@@ -52,6 +52,11 @@ Last synced: 2026-07-27
 #### Productivity & Utilities
 
 - **[archive-conversation](archive-conversation/SKILL.md)** *(nweii)* — "Create analytical archival summaries of AI conversations, capturing intellectual journeys, key insights, and technical logs. Use when archiving, saving, or documenting a chat session."
+
+#### Other
+
+- **[brainstorming](brainstorming/SKILL.md)** *(Obra)* — You MUST use this before any creative work - creating features, building components, adding functionality, or modifying behavior. Explores user intent, requirements and design before implementation.
+- **[humanizer](humanizer/SKILL.md)** *(skeletorjs)* — >
 
 ## Global Copilot Instructions
 

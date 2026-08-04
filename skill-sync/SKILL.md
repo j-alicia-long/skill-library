@@ -1,30 +1,48 @@
 ---
 name: skill-sync
-description: Sync the personal-os skill library — register all skills with GitHub Copilot and optionally push to the skill-library repo in agentskills.io format. Use when the user asks to sync, register, push, or export skills, or after adding or editing a skill in personal-os/skills/.
+description: Bidirectionally sync skills between the local skills directory and the shared skill-library repo — pull & merge changes down, or push new/updated skills up to GitHub. Use when the user asks to sync, pull, push, or export skills, or after adding or editing a skill locally. Always confirm with the user before pushing.
+compatibility: Any platform
 metadata:
   author: j-alicia-long
 ---
-Sync skills from `personal-os/skills/` (the skill library): register each skill as a GitHub Copilot personal skill (`~/.copilot/skills/`), regenerate the library README, and optionally push to the [skill-library repo](https://github.com/j-alicia-long/skill-library) in [agentskills.io](https://agentskills.io) format.
+Keep the local skills directory and the shared [skill-library repo](https://github.com/j-alicia-long/skill-library) in sync, in [agentskills.io](https://agentskills.io) format. Sync runs in **both directions**:
 
-## Sync
+- **pull** — pull the library repo and merge its skills *down* into the local skills directory.
+- **push** — copy local skills *up* into the library and push to GitHub.
+
+Both directions are **additive**: pull never deletes local-only files, and push never deletes library skills that don't exist locally. Removals must be done by hand.
+
+The commands operate through a local git checkout of the library (`--library-dir`, default `personal-os/02-projects/skill-library`). The local skills directory (`--skills-dir`, default the platform's skills folder) is the working copy you edit.
+
+## Check status first
 
 ```bash
-bun run personal-os/skills/skill-sync/scripts/sync.ts          # register + generate
-bun run personal-os/skills/skill-sync/scripts/sync.ts --push   # also commit + push to GitHub
+bun run Skills/skill-sync/scripts/sync.ts status
 ```
 
-`--push` handles the whole publish: it clones the skill-library repo, copies the skills in, commits with a dated message, and pushes — no manual git steps. `--help` for all options (custom paths, `--no-register`, `--dry-run`). Done when the script exits 0 and prints the skill count. With `--push`, also confirm the repo URL appears. New Copilot sessions pick up registered skills automatically; existing sessions need a restart.
+Read-only. Shows exactly what a pull would bring down and what a push would send up, plus library-only skills. Run this first to understand the current divergence.
 
-## How skills go live
+## Pull (library → local)
 
-`personal-os/skills/` is the library — the source of truth. Agents load skills from it indirectly, through one of two registrations:
+```bash
+bun run Skills/skill-sync/scripts/sync.ts pull            # merge changes down
+bun run Skills/skill-sync/scripts/sync.ts pull --dry-run  # preview only
+```
 
-- **User scope (all projects):** the sync's register step copies each skill into the Copilot app's skills dir (`~/Library/Application Support/com.github.githubapp/app-skills/`). These are copies, so re-run the sync after editing a skill.
-- **Project scope:** a symlink in a project's `.claude/skills/` pointing into the library (e.g. `skill-sync -> ../../skills/skill-sync`). Symlinks pick up library edits immediately — no re-sync; editing through either path touches the same file.
+Overlays library files onto local skills. Local-only files (e.g. platform display metadata) are kept, but a local edit to a skill that also changed upstream will be overwritten — so push unpushed local work first if unsure.
 
-## Adding a skill
+## Push (local → library → GitHub)
 
-Copy the skill folder (containing `SKILL.md`) into `personal-os/skills/<name>/`, add it to `GROUP_MAP` in `scripts/sync.ts`, then run the sync.
+**Always confirm with the user before pushing.** The script enforces this: a plain `push` only stages and previews the diff; it will not commit or push without `--confirm`.
+
+```bash
+bun run Skills/skill-sync/scripts/sync.ts push            # preview the diff (safe)
+bun run Skills/skill-sync/scripts/sync.ts push --confirm  # commit & push after user approves
+```
+
+Workflow: run `push` (or `status`) to show the pending changes, present them to the user, and only after they approve, re-run with `--confirm`. Done when the script prints the repo URL after a successful push.
+
+`--help` lists all options.
 
 ## Install locally
 
