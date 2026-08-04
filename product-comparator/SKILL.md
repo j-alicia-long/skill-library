@@ -1,7 +1,7 @@
 ---
 name: product-comparator
 description: Find the best deal on a product across retailers. Use when the user wants to compare prices, find the cheapest option, or decide where to buy something. Searches multiple stores, normalizes prices per unit, checks seller reputation, and recommends the best option.
-compatibility: Created for Zo Computer
+compatibility: Any platform with websearch
 metadata:
   author: j-alicia-long
 ---
@@ -47,7 +47,7 @@ Then for each promising result, use `read_webpage` or `web_research` to get the 
 4. Walmart
 5. Costco
 6. Category-specific retailers (Sephora/Ulta for beauty, Best Buy for electronics, etc.)
-7. Third-party/discount sellers
+7. Third-party/discount sellers (ex. EBay, Poshmark, Backmarket, etc.)
 
 ### 3. Collect data for each option
 
@@ -90,7 +90,7 @@ Keep the recommendation opinionated. Don't hedge — pick a winner and say why.
 
 ### 6. Offer to save
 
-Ask if the user wants to save the comparison to their workspace (e.g., `personal-os/03-resources/product-comparisons/[product]-[date].md`). This makes it easy to re-check prices later or reference the decision.
+Ask if the user wants to save the comparison to their workspace. This makes it easy to re-check prices later or reference the decision.
 
 ## Important notes
 
