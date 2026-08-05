@@ -64,7 +64,7 @@ For every viable option found, record:
 | Shipping | Free with Prime |
 | Promotions | Subscribe & Save, cancel after first delivery |
 | In stock | Yes |
-| URL | (include for reference) |
+| URL | (required — always capture the direct product page URL) |
 
 ### 4. Normalize and rank
 
@@ -81,7 +81,7 @@ Use the formulas in `references/pricing-guide.md` to:
 
 Use the template in `assets/comparison-template.md` to output:
 
-1. A **comparison table** — all options side by side
+1. A **comparison table** — all options side by side, with each listing hyperlinked to its product page (use markdown links; if the exact product URL is unavailable, link the best source, e.g. the deal article or retailer search)
 2. A **recommendation** — the best overall pick with reasoning
 3. A **runner-up** — in case the top pick has a caveat
 4. Any **alerts** — things worth knowing (price drops, limited stock, authenticity concerns)
@@ -94,6 +94,7 @@ Ask if the user wants to save the comparison to their workspace. This makes it e
 
 ## Important notes
 
+- **Always include links.** Every option in the comparison table must link to its product listing so the user can buy directly. Prefer clean, direct URLs (strip affiliate/tracking parameters).
 - Always include the brand's own website. Direct-from-brand is sometimes cheapest and always authentic.
 - "Sold by Amazon" ≠ "Sold on Amazon." Third-party marketplace sellers on Amazon/Walmart can be unauthorized resellers.
 - When a product comes in multiple sizes, compare the same size OR normalize to price-per-unit. Never compare a 3 oz bottle to a 33 oz bottle by sticker price.

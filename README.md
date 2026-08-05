@@ -2,7 +2,7 @@
 
 Portable AI skills in [Agent Skills](https://agentskills.io) format.
 
-Last synced: 2026-07-28
+Last synced: 2026-08-05
 
 ## My Skills
 
@@ -57,10 +57,6 @@ Last synced: 2026-07-28
 
 - **[brainstorming](brainstorming/SKILL.md)** *(Obra)* — You MUST use this before any creative work - creating features, building components, adding functionality, or modifying behavior. Explores user intent, requirements and design before implementation.
 - **[humanizer](humanizer/SKILL.md)** *(skeletorjs)* — >
-
-## Global Copilot Instructions
-
-[`_config/copilot-instructions.md`](_config/copilot-instructions.md) is the canonical copy of my global Copilot instructions. The live path `~/.copilot/copilot-instructions.md` is a symlink pointing to this file (in the primary checkout), so edits here are version-controlled and picked up by the Copilot app.
 
 ## Install
 

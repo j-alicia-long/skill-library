@@ -7,7 +7,8 @@ Compared on [date].
 | | Option 1 | Option 2 | Option 3 |
 |---|---|---|---|
 | **Retailer** | | | |
-| **Listing** | | | |
+| **Listing** (linked) | | | |
+| **Link** | [View](url) | [View](url) | [View](url) |
 | **Price** | | | |
 | **Size / Qty** | | | |
 | **Price per [unit]** | | | |
