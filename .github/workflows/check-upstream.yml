@@ -1,0 +1,64 @@
+name: Check upstream skill updates
+
+on:
+  schedule:
+    - cron: "0 13 * * 1" # Mondays 13:00 UTC (~9am ET)
+  workflow_dispatch:
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+
+      - name: Run upstream check
+        id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set +e
+          bun run skill-sync/scripts/sync.ts check-upstream --library-dir "$PWD" | tee report.txt
+          code=${PIPESTATUS[0]}
+          set -e
+          if [ "$code" = "20" ]; then
+            echo "updates=true" >> "$GITHUB_OUTPUT"
+          elif [ "$code" = "0" ]; then
+            echo "updates=false" >> "$GITHUB_OUTPUT"
+          else
+            exit "$code"
+          fi
+
+      - name: Create or update tracking issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TITLE="Upstream skill updates available"
+          existing=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open \
+            --search "in:title \"$TITLE\"" --json number --jq '.[0].number // empty')
+
+          if [ "${{ steps.check.outputs.updates }}" = "true" ]; then
+            {
+              echo "Automated report from the weekly upstream check ($(date -u +%F))."
+              echo "Review each diff, apply updates manually, then re-pin with:"
+              echo '`bun run skill-sync/scripts/sync.ts check-upstream --accept <skill>`'
+              echo
+              echo '```'
+              cat report.txt
+              echo '```'
+            } > body.md
+            if [ -n "$existing" ]; then
+              gh issue edit "$existing" --repo "$GITHUB_REPOSITORY" --body-file body.md
+              echo "Updated issue #$existing"
+            else
+              gh issue create --repo "$GITHUB_REPOSITORY" --title "$TITLE" --body-file body.md
+            fi
+          elif [ -n "$existing" ]; then
+            gh issue close "$existing" --repo "$GITHUB_REPOSITORY" \
+              --comment "All tracked skills are up to date as of $(date -u +%F). Closing automatically."
+          fi

@@ -1,0 +1,210 @@
+{
+  "animation-vocabulary": {
+    "untracked": "compiled from animations.dev vocabulary page; no skill repo upstream"
+  },
+  "apple-design": {
+    "untracked": "compiled from WWDC 'Designing Fluid Interfaces'; no skill repo upstream"
+  },
+  "archive-conversation": {
+    "repo": "nweii/agent-stuff",
+    "path": "skills/archive-conversation",
+    "branch": "master",
+    "vendoredCommit": "b4c79a18c01e2daa931d01f2281b0d56e964a4c5",
+    "files": {
+      "SKILL.md": "02e82bcb4fc3bf5a612f0448cddd969f1b60d7a8"
+    }
+  },
+  "brainstorming": {
+    "repo": "obra/superpowers",
+    "path": "skills/brainstorming",
+    "branch": "main",
+    "vendoredCommit": "44c9b2d6e889982ac18c27d05a19fefe335194e1",
+    "files": {
+      "SKILL.md": "6bcb56171de4a4739f645947c2a856eb3f2ec76a"
+    },
+    "localEdits": true
+  },
+  "emil-design-eng": {
+    "untracked": "compiled from Emil Kowalski's animations.dev material; no skill repo upstream"
+  },
+  "find-skills": {
+    "repo": "vercel-labs/skills",
+    "path": "skills/find-skills",
+    "branch": "main",
+    "vendoredCommit": "ceea0088e483744887186fb911841bf5449b8324",
+    "files": {
+      "SKILL.md": "7369d660adb5f967adce4421e7bc45d455b3d491"
+    }
+  },
+  "frontend-design": {
+    "repo": "anthropics/skills",
+    "path": "skills/frontend-design",
+    "branch": "main",
+    "vendoredCommit": "b29e7cf65e5cb78a5ac33d582270551bc74a14eb",
+    "files": {
+      "LICENSE.txt": "f433b1a53f5b830a205fd2df78e2b34974656c7b",
+      "SKILL.md": "b75274bc36a40d20d1e1cfeb6231337e0e440b24"
+    },
+    "localEdits": true
+  },
+  "github": {
+    "untracked": "Clawdbot external-skill template; no public GitHub upstream found"
+  },
+  "grill-me": {
+    "repo": "mattpocock/skills",
+    "path": "skills/productivity/grill-me",
+    "branch": "main",
+    "vendoredCommit": "84fdeffd12f2ee307994d1eb6feb48173b6e0502",
+    "files": {
+      "SKILL.md": "bf1e86d3a462e413b14c2631c8b56c0cfb6a540f"
+    },
+    "localEdits": true
+  },
+  "grill-with-docs": {
+    "repo": "mattpocock/skills",
+    "path": "skills/engineering/grill-with-docs",
+    "branch": "main",
+    "vendoredCommit": "84fdeffd12f2ee307994d1eb6feb48173b6e0502",
+    "files": {
+      "SKILL.md": "bed05d2bd3245306267cea57cd696b5dd94d50fe"
+    }
+  },
+  "grilling": {
+    "repo": "mattpocock/skills",
+    "path": "skills/productivity/grilling",
+    "branch": "main",
+    "vendoredCommit": "84fdeffd12f2ee307994d1eb6feb48173b6e0502",
+    "files": {
+      "SKILL.md": "b77d3401eb49ac8a024848b663e9e2081810226f"
+    },
+    "localEdits": true
+  },
+  "handoff": {
+    "repo": "mattpocock/skills",
+    "path": "skills/productivity/handoff",
+    "branch": "main",
+    "vendoredCommit": "84fdeffd12f2ee307994d1eb6feb48173b6e0502",
+    "files": {
+      "SKILL.md": "fe169443664cbffa9c5e26f3d7befc74edba3a78",
+      "agents/openai.yaml": "6e1d8da121beceddc2f9ec7fa8714c1d914dd11a"
+    },
+    "localEdits": true
+  },
+  "humanizer": {
+    "untracked": "author skeletorjs, distributed via Zo Computer; no public GitHub upstream found"
+  },
+  "i-have-adhd": {
+    "repo": "ayghri/i-have-adhd",
+    "path": "skills/i-have-adhd",
+    "branch": "main",
+    "vendoredCommit": "2d19ad205eb1d85fc9c3968bdeba4c2116518685",
+    "files": {
+      "SKILL.md": "6140ac34533d7cd3a29238c77dcca92aaa33259b",
+      "agents/gemini.toml": "68f19e6959f44851ad7fbafaf9df7cb382e9d057",
+      "agents/openai.yaml": "0e8285b9bb854e7ee4c25f4c48f593a87e9eb85d"
+    },
+    "localEdits": true
+  },
+  "improve-codebase-architecture": {
+    "repo": "mattpocock/skills",
+    "path": "skills/engineering/improve-codebase-architecture",
+    "branch": "main",
+    "vendoredCommit": "697d4ce9742da558fd1ba6697c8e9775e2e302dd",
+    "files": {
+      "HTML-REPORT.md": "17f6d2c7b8342ee7c4260d8d98024d462c7d3eaa",
+      "SKILL.md": "b56969e92f0705d70700f908b8ec929a1edfa782",
+      "agents/openai.yaml": "706fdca096da5937fe57875a9154017d50668c42"
+    }
+  },
+  "mcporter": {
+    "untracked": "Clawdbot external-skill template; no public GitHub upstream found"
+  },
+  "setup-pre-commit": {
+    "repo": "mattpocock/skills",
+    "path": "skills/misc/setup-pre-commit",
+    "branch": "main",
+    "vendoredCommit": "84fdeffd12f2ee307994d1eb6feb48173b6e0502",
+    "files": {
+      "SKILL.md": "395a77b5f7e33911092f7bc86e7d87c4ca70d189"
+    }
+  },
+  "tdd": {
+    "repo": "mattpocock/skills",
+    "path": "skills/engineering/tdd",
+    "branch": "main",
+    "vendoredCommit": "697d4ce9742da558fd1ba6697c8e9775e2e302dd",
+    "files": {
+      "SKILL.md": "9a2e1d2a1ad856b0d5903dd002209ff8c32c9a48",
+      "mocking.md": "71cbfee674d93244ce81d1830b930ca9a69200bd",
+      "tests.md": "7ab86479f925a1f9e8ba680af33cb3b12e015381"
+    }
+  },
+  "teach": {
+    "repo": "mattpocock/skills",
+    "path": "skills/productivity/teach",
+    "branch": "main",
+    "vendoredCommit": "84fdeffd12f2ee307994d1eb6feb48173b6e0502",
+    "files": {
+      "GLOSSARY-FORMAT.md": "9cae84c44c8eb5d27b8695d4ef29a2893dc4900c",
+      "LEARNING-RECORD-FORMAT.md": "2faa7c98fabcdff48eb6bd07e4847d48a6b8d4e1",
+      "MISSION-FORMAT.md": "5dac184a319308e2ec0c18c16d6b8d52b9be2748",
+      "RESOURCES-FORMAT.md": "c94aac6a2634cc229fe0b777fc5cc7da3a28c3d2",
+      "SKILL.md": "b1603e5ac536d2b5c29496c06df4db0bb9f74e69"
+    }
+  },
+  "to-spec": {
+    "repo": "mattpocock/skills",
+    "path": "skills/engineering/to-spec",
+    "branch": "main",
+    "vendoredCommit": "697d4ce9742da558fd1ba6697c8e9775e2e302dd",
+    "files": {
+      "SKILL.md": "f3cca8d3dbdb7c22e11447f1d13011a78ca6efba"
+    }
+  },
+  "to-tickets": {
+    "repo": "mattpocock/skills",
+    "path": "skills/engineering/to-tickets",
+    "branch": "main",
+    "vendoredCommit": "84fdeffd12f2ee307994d1eb6feb48173b6e0502",
+    "files": {
+      "SKILL.md": "479523c56e5be7acfc25aa31c0efdc9021ec7e6b",
+      "agents/openai.yaml": "24605a5db64e4fc750b999aa94aea126bee814ee"
+    },
+    "localEdits": true
+  },
+  "visual-design-rules": {
+    "untracked": "compiled from anthonyhobday.com/sideprojects/saferules; no skill repo upstream"
+  },
+  "wait-what": {
+    "repo": "mattpocock/skills",
+    "path": "skills/productivity/wait-what",
+    "branch": "main",
+    "vendoredCommit": "84fdeffd12f2ee307994d1eb6feb48173b6e0502",
+    "files": {
+      "SKILL.md": "31be8101b84a284676d167b2646a3b701d264696",
+      "agents/openai.yaml": "ba77f1c967700d7c6574ba70b0dd585056c98b7f"
+    },
+    "localEdits": true
+  },
+  "webapp-testing": {
+    "repo": "anthropics/skills",
+    "path": "skills/webapp-testing",
+    "branch": "main",
+    "vendoredCommit": "b29e7cf65e5cb78a5ac33d582270551bc74a14eb",
+    "files": {
+      "LICENSE.txt": "7a4a3ea2424c09fbe48d455aed1eaa94d9124835",
+      "SKILL.md": "b442f8990f547c5b274a6bf361fd8022d0d37ee1",
+      "examples/console_logging.py": "9329b5e232ed53d944bfe95e750070117d31b9ab",
+      "examples/element_discovery.py": "917ba72f52421a1b324f93ae8e38af72010a87b9",
+      "examples/static_html_automation.py": "90bbedcc08cdb345c74fb938ebad02c0baf56603",
+      "scripts/with_server.py": "431f2eba16b268b7f3e2ae4daae9db41c0289b6d"
+    },
+    "localEdits": true
+  },
+  "writing-great-agentsmd": {
+    "untracked": "source is a blog post (aihero.dev/a-complete-guide-to-agents-md), no repo"
+  },
+  "writing-great-skills": {
+    "untracked": "upstream renamed to writing-for-agents (mattpocock/skills, commit 1fc6573) with restructured content; local copy is the pre-rename snapshot kept intentionally"
+  }
+}

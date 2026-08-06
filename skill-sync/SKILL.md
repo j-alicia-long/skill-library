@@ -44,6 +44,25 @@ Workflow: run `push` (or `status`) to show the pending changes, present them to 
 
 `--help` lists all options.
 
+## Check for upstream updates (downloaded skills)
+
+Downloaded skills are tracked in `_config/upstreams.json` (upstream repo, path, and the content hashes as vendored). Compare against upstream:
+
+```bash
+bun run Skills/skill-sync/scripts/sync.ts check-upstream
+```
+
+Read-only — it never modifies skills. `status` also runs this check automatically. Report states:
+
+- **UPSTREAM UPDATES** — upstream changed, local copy untouched. Review the compare link, apply the update manually, then re-pin: `check-upstream --accept <skill>` (and commit the manifest).
+- **DIVERGED** — changed both locally and upstream; needs a manual merge before re-pinning.
+- **LOCALLY MODIFIED** — local edits only; nothing to do.
+- **UNTRACKED / NOT IN MANIFEST** — no checkable upstream, or missing a manifest entry.
+
+**Always relay the full report text directly in chat** — never just summarize it or point at tool output the user can't see.
+
+A weekly GitHub Action (`.github/workflows/check-upstream.yml`) runs the same check and maintains a single tracking issue ("Upstream skill updates available") in the library repo, closing it when everything is current.
+
 ## Install locally
 
 When the user asks to set up skills on their machine, provide the commands from [`file INSTALL.md`](INSTALL.md) tailored to the tool(s) they mention.
