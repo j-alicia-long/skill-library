@@ -85,7 +85,7 @@
     "branch": "main",
     "vendoredCommit": "84fdeffd12f2ee307994d1eb6feb48173b6e0502",
     "files": {
-      "SKILL.md": "fe169443664cbffa9c5e26f3d7befc74edba3a78",
+      "SKILL.md": "043d9e13dc7eca3002a47d3ab9865c568f647863",
       "agents/openai.yaml": "6e1d8da121beceddc2f9ec7fa8714c1d914dd11a"
     },
     "localEdits": true

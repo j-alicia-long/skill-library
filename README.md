@@ -2,7 +2,7 @@
 
 Portable AI skills in [Agent Skills](https://agentskills.io) format.
 
-Last synced: 2026-08-05
+Last synced: 2026-08-09
 
 ## My Skills
 
@@ -56,10 +56,15 @@ Last synced: 2026-08-05
 #### Other
 
 - **[brainstorming](brainstorming/SKILL.md)** *(Obra)* — You MUST use this before any creative work - creating features, building components, adding functionality, or modifying behavior. Explores user intent, requirements and design before implementation.
+- **[handoff](handoff/SKILL.md)** *(mattpocock)* — Compact the current conversation into a handoff document for another agent to pick up.
 - **[humanizer](humanizer/SKILL.md)** *(skeletorjs)* — >
+- **[i-have-adhd](i-have-adhd/SKILL.md)** *(ayghri)* — 'Shape output for a reader with ADHD: lead with the next action, number multi-step work, restate state across turns, suppress tangents, give specific time estimates, make wins visible. Invoke with /i-have-adhd; stays on until "stop adhd mode".'
+- **[wait-what](wait-what/SKILL.md)** *(mattpocock)* — Stop. That last message did not land — re-pitch it.
 
 ## Install
 
 ```bash
 npx skills add j-alicia-long/skill-library
 ```
+
+Downloaded skills are checked for upstream updates weekly by [a GitHub Action](.github/workflows/check-upstream.yml) using [`_config/upstreams.json`](_config/upstreams.json); see [skill-sync](skill-sync/SKILL.md) for the `check-upstream` command.
