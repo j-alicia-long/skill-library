@@ -26,3 +26,7 @@ I often edit files while the agent is working. Assume any file may have changed 
 ## Project documentation
 
 - **After making changes, always check and update relevant language in project context files** — AGENTS.md, context.md, spec.md, devlog.md, and any other related documentation — so they stay in sync with the current state of the code.
+
+## Repo layout (personal machine)
+
+- **Git repos live at `~/Documents/repos/`, never inside `~/Documents/personal-os/`.** Project folders in `personal-os/02-projects/` contain symlinks to the real repos (Zo's Mutagen sync clobbers git working trees; it doesn't follow symlinks). When creating or cloning a repo for a project, put it in `~/Documents/repos/` and symlink it into the project folder. See `personal-os/02-projects/AGENTS.md` for details.

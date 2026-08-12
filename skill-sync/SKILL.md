@@ -12,6 +12,8 @@ Keep the local skills directory and the shared [skill-library repo](https://gith
 
 Both directions are **additive**: pull never deletes local-only files, and push never deletes library skills that don't exist locally. Removals must be done by hand.
 
+**Excluded skills are never synced.** The `PRIVATE_SKILLS` list at the top of `scripts/sync.ts` names skills that both pull and push skip entirely (currently: `writing-voice`, `voice-analysis`). Add any private or externally-managed skill to that list by name.
+
 The commands operate through a local git checkout of the library (`--library-dir`, default `personal-os/02-projects/skill-library`). The local skills directory (`--skills-dir`, default the platform's skills folder) is the working copy you edit.
 
 ## Check status first

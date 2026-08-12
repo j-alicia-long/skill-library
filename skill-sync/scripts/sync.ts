@@ -14,6 +14,12 @@ const LOCAL_SOURCE_DIRS = [
 
 // Never copied into either side.
 const EXCLUDE = new Set(["node_modules", ".git", "agents"]);
+// Skills that must never sync in either direction, regardless of how they are
+// installed. Add private or externally-managed skills here by name.
+const PRIVATE_SKILLS = new Set([
+  "writing-voice", // private personal skill
+  "voice-analysis", // externally managed (installed via npx skills)
+]);
 // Files that live at the library root but are not skills.
 const NON_SKILL_ENTRIES = new Set(["README.md", ".git", ".github"]);
 
@@ -116,6 +122,7 @@ async function scanDir(dir: string): Promise<Map<string, string>> {
   if (!(await exists(dir))) return skills;
   const entries = await readdir(dir, { withFileTypes: true });
   for (const entry of entries) {
+    if (PRIVATE_SKILLS.has(entry.name)) continue;
     if (!entry.isDirectory() || EXCLUDE.has(entry.name) || NON_SKILL_ENTRIES.has(entry.name)) continue;
     if (await exists(join(dir, entry.name, "SKILL.md"))) skills.set(entry.name, dir);
   }
