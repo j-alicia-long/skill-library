@@ -91,7 +91,7 @@
     "localEdits": true
   },
   "humanizer": {
-    "untracked": "author skeletorjs, distributed via Zo Computer; no public GitHub upstream found"
+    "untracked": "author skeletorjs; no public GitHub upstream found. Not derived from blader/humanizer (no shared headings or text at any version); both independently adapt Wikipedia's \"Signs of AI writing\" page"
   },
   "i-have-adhd": {
     "repo": "ayghri/i-have-adhd",

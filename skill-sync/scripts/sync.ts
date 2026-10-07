@@ -1,16 +1,26 @@
 import { cp, exists, mkdir, readdir, readFile, rm, writeFile } from "fs/promises";
+import { existsSync } from "fs";
+import { homedir } from "os";
 import { join } from "path";
 import { parseArgs } from "util";
 
 const REPO = "j-alicia-long/skill-library";
-const DEFAULT_SKILLS_DIR = "/home/workspace/Skills";
-const DEFAULT_LIBRARY_DIR = "/home/workspace/personal-os/02-projects/skill-library";
+const HOME = homedir();
 
-// Additional local sources scanned when pushing (locally installed skills).
-const LOCAL_SOURCE_DIRS = [
-  "/home/workspace/.agents/skills",
-  "/home/workspace/.claude/skills",
-];
+// Where each AI tool keeps user-level skills. The primary --skills-dir is the
+// first entry that exists on disk (override with --tool or --skills-dir); every
+// other entry that exists is scanned on push for locally installed skills.
+const TOOL_SKILLS_DIRS: Record<string, string> = {
+  copilot: join(HOME, ".copilot", "skills"), // GitHub Copilot CLI / VS Code
+  claude: join(HOME, ".claude", "skills"), // Claude Code
+  codex: join(HOME, ".codex", "skills"), // OpenAI Codex
+  cursor: join(HOME, ".cursor", "skills"), // Cursor
+  gemini: join(HOME, ".gemini", "skills"), // Gemini CLI
+  agents: join(HOME, ".agents", "skills"), // agentskills.io shared dir (npx skills)
+};
+const TOOL_NAMES = Object.keys(TOOL_SKILLS_DIRS);
+const DEFAULT_TOOL = TOOL_NAMES.find((t) => existsSync(TOOL_SKILLS_DIRS[t])) ?? TOOL_NAMES[0];
+const DEFAULT_LIBRARY_DIR = join(HOME, "Documents", "repos", "skill-library");
 
 // Never copied into either side.
 const EXCLUDE = new Set(["node_modules", ".git", "agents"]);
@@ -26,7 +36,8 @@ const NON_SKILL_ENTRIES = new Set(["README.md", ".git", ".github"]);
 const { values: args, positionals } = parseArgs({
   allowPositionals: true,
   options: {
-    "skills-dir": { type: "string", default: DEFAULT_SKILLS_DIR },
+    tool: { type: "string" },
+    "skills-dir": { type: "string" },
     "library-dir": { type: "string", default: DEFAULT_LIBRARY_DIR },
     confirm: { type: "boolean", default: false },
     "dry-run": { type: "boolean", default: false },
@@ -56,7 +67,10 @@ Commands:
                   Use --accept <skill> to re-pin a skill after manually pulling an update.
 
 Options:
-  --skills-dir <path>    Local skills directory (default: ${DEFAULT_SKILLS_DIR})
+  --tool <name>          Which tool's skills directory is the primary local copy.
+                         One of: ${TOOL_NAMES.join(", ")}.
+                         Default: first that exists on this machine (${DEFAULT_TOOL}).
+  --skills-dir <path>    Primary local skills directory; overrides --tool.
   --library-dir <path>   Local git checkout of the library repo (default: ${DEFAULT_LIBRARY_DIR})
   --confirm              (push) Commit & push. Without it, push only stages and previews.
   --dry-run              (pull) Report changes without writing.
@@ -65,11 +79,19 @@ Options:
 
 The library repo is https://github.com/${REPO}. 'pull' and 'push' operate through the
 local checkout at --library-dir, which must be a git clone of that repo.
-When pushing, also scans ${LOCAL_SOURCE_DIRS.join(", ")} for locally installed skills.`);
+
+Known tool skills directories (all that exist are scanned on push; the primary one wins on a name clash):
+${TOOL_NAMES.map((t) => `  ${t.padEnd(8)} ${TOOL_SKILLS_DIRS[t]}`).join("\n")}`);
   process.exit(args.help ? 0 : 1);
 }
 
-const SKILLS_DIR = args["skills-dir"]!;
+if (args.tool && !(args.tool in TOOL_SKILLS_DIRS)) {
+  console.error(`✗ Unknown --tool '${args.tool}'. Known tools: ${TOOL_NAMES.join(", ")}`);
+  process.exit(1);
+}
+const SKILLS_DIR = args["skills-dir"] ?? TOOL_SKILLS_DIRS[args.tool ?? DEFAULT_TOOL];
+// Every other known tool directory; scanned on push for locally installed skills.
+const LOCAL_SOURCE_DIRS = Object.values(TOOL_SKILLS_DIRS).filter((d) => d !== SKILLS_DIR);
 const LIBRARY_DIR = args["library-dir"]!;
 const CONFIRM = args.confirm!;
 const DRY_RUN = args["dry-run"]!;
