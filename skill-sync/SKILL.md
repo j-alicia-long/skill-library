@@ -14,12 +14,25 @@ Both directions are **additive**: pull never deletes local-only files, and push 
 
 **Excluded skills are never synced.** The `PRIVATE_SKILLS` list at the top of `scripts/sync.ts` names skills that both pull and push skip entirely (currently: `writing-voice`, `voice-analysis`). Add any private or externally-managed skill to that list by name.
 
-The commands operate through a local git checkout of the library (`--library-dir`, default `personal-os/02-projects/skill-library`). The local skills directory (`--skills-dir`, default the platform's skills folder) is the working copy you edit.
+The commands operate through a local git checkout of the library (`--library-dir`, default `~/Documents/repos/skill-library`). The **primary** local skills directory (`--skills-dir`) is the working copy you edit; `pull` writes there and it wins on a name clash during `push`. By default it is the first of these that exists on the machine, or pick one explicitly with `--tool <name>`:
+
+| `--tool` | Directory | Tool |
+|---|---|---|
+| `copilot` | `~/.copilot/skills` | GitHub Copilot CLI / VS Code |
+| `claude` | `~/.claude/skills` | Claude Code |
+| `codex` | `~/.codex/skills` | OpenAI Codex |
+| `cursor` | `~/.cursor/skills` | Cursor |
+| `gemini` | `~/.gemini/skills` | Gemini CLI |
+| `agents` | `~/.agents/skills` | agentskills.io shared dir (`npx skills`) |
+
+Every *other* directory in that table that exists is also scanned on `push`, so a skill installed for any tool reaches the library. The mapping lives in `TOOL_SKILLS_DIRS` at the top of `scripts/sync.ts`; add a row there for a new tool.
+
+In the examples below, `$SKILL_DIR` is wherever this skill is installed — the base directory shown when the skill loads, e.g. `~/.copilot/skills/skill-sync` or `~/.claude/skills/skill-sync`.
 
 ## Check status first
 
 ```bash
-bun run Skills/skill-sync/scripts/sync.ts status
+bun run $SKILL_DIR/scripts/sync.ts status
 ```
 
 Read-only. Shows exactly what a pull would bring down and what a push would send up, plus library-only skills. Run this first to understand the current divergence.
@@ -27,8 +40,8 @@ Read-only. Shows exactly what a pull would bring down and what a push would send
 ## Pull (library → local)
 
 ```bash
-bun run Skills/skill-sync/scripts/sync.ts pull            # merge changes down
-bun run Skills/skill-sync/scripts/sync.ts pull --dry-run  # preview only
+bun run $SKILL_DIR/scripts/sync.ts pull            # merge changes down
+bun run $SKILL_DIR/scripts/sync.ts pull --dry-run  # preview only
 ```
 
 Overlays library files onto local skills. Local-only files (e.g. platform display metadata) are kept, but a local edit to a skill that also changed upstream will be overwritten — so push unpushed local work first if unsure.
@@ -38,8 +51,8 @@ Overlays library files onto local skills. Local-only files (e.g. platform displa
 **Always confirm with the user before pushing.** The script enforces this: a plain `push` only stages and previews the diff; it will not commit or push without `--confirm`.
 
 ```bash
-bun run Skills/skill-sync/scripts/sync.ts push            # preview the diff (safe)
-bun run Skills/skill-sync/scripts/sync.ts push --confirm  # commit & push after user approves
+bun run $SKILL_DIR/scripts/sync.ts push            # preview the diff (safe)
+bun run $SKILL_DIR/scripts/sync.ts push --confirm  # commit & push after user approves
 ```
 
 Workflow: run `push` (or `status`) to show the pending changes, present them to the user, and only after they approve, re-run with `--confirm`. Done when the script prints the repo URL after a successful push.
@@ -51,7 +64,7 @@ Workflow: run `push` (or `status`) to show the pending changes, present them to 
 Downloaded skills are tracked in `_config/upstreams.json` (upstream repo, path, and the content hashes as vendored). Compare against upstream:
 
 ```bash
-bun run Skills/skill-sync/scripts/sync.ts check-upstream
+bun run $SKILL_DIR/scripts/sync.ts check-upstream
 ```
 
 Read-only — it never modifies skills. `status` also runs this check automatically. Report states:

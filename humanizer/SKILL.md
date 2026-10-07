@@ -4,7 +4,7 @@ description: >
   Detect and fix AI writing patterns. Use when writing outbound content like
   emails, proposals, blog posts, client deliverables, or any external-facing
   writing. Also use when asked to humanize, polish, or de-AI text.
-compatibility: Created for Zo Computer
+compatibility: Any platform
 metadata:
   author: skeletorjs
   category: Community
