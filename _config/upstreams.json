@@ -24,6 +24,17 @@
     },
     "localEdits": true
   },
+  "domain-modeling": {
+    "repo": "mattpocock/skills",
+    "path": "skills/engineering/domain-modeling",
+    "branch": "main",
+    "vendoredCommit": "697d4ce9742da558fd1ba6697c8e9775e2e302dd",
+    "files": {
+      "ADR-FORMAT.md": "da7e78ec1c220cd0aedf7ad36424c9398034f375",
+      "CONTEXT-FORMAT.md": "eaf2a18573f0a2d8c69ed53e29e4d9e21baf81d8",
+      "SKILL.md": "d0f7e1a5ccb06a7184056ff9af02b67bc77f9dda"
+    }
+  },
   "emil-design-eng": {
     "untracked": "compiled from Emil Kowalski's animations.dev material; no skill repo upstream"
   },

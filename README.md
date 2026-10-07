@@ -56,6 +56,7 @@ Last synced: 2026-10-07
 #### Other
 
 - **[brainstorming](brainstorming/SKILL.md)** *(Obra)* — You MUST use this before any creative work - creating features, building components, adding functionality, or modifying behavior. Explores user intent, requirements and design before implementation.
+- **[domain-modeling](domain-modeling/SKILL.md)** — Build and sharpen a project's domain model. Use when the user wants to pin down domain terminology or a ubiquitous language, record an architectural decision, or when another skill needs to maintain the domain model.
 - **[handoff](handoff/SKILL.md)** *(mattpocock)* — Compact the current conversation into a handoff document for another agent to pick up.
 - **[humanizer](humanizer/SKILL.md)** *(skeletorjs)* — >
 - **[i-have-adhd](i-have-adhd/SKILL.md)** *(ayghri)* — 'Shape output for a reader with ADHD: lead with the next action, number multi-step work, restate state across turns, suppress tangents, give specific time estimates, make wins visible. Invoke with /i-have-adhd; stays on until "stop adhd mode".'
